@@ -10,30 +10,47 @@ class Order
 {
 private:
     std::string    _symbol;
-    double         _price;
-    long           _qty;
-    Side           _side;
     std::string    _orderId; 
+    Side           _side;
+    long           _qty;
+    long           _filledQty;
+    long           _remainingQty;
+    double         _price;
 
 public:
-    std::string& getSymbol()   { return _symbol; }
-    double getPrice()          { return _price; }
-    long getQty()              { return _qty; }
-    Side getSide()             { return _side; }
-    std::string& getOrderID()  { return _orderId; }
-
-    Order(std::string symbol, double price, long qty, Side side, std::string orderId):
+    Order() {}
+    Order(std::string symbol, std::string orderId, Side side, long qty, double price):
         _symbol(symbol),
-        _price(price), 
-        _qty(qty),
+        _orderId(orderId),
         _side(side),
-        _orderId(orderId)
+        _qty(qty),
+        _price(price),
+        _filledQty(0),
+        _remainingQty(qty)
         {}
+
+    double getPrice()         { return _price;         }
+    long   getQty()           { return _qty;           }
+    long   getFilledQty()     { return _filledQty;     }
+    long   getReminingQty()   { return _remainingQty;  }
+    Side   getSide()          { return _side;          }
+    std::string& getSymbol()  { return _symbol;        }
+    std::string& getOrderId() { return _orderId;       }
+
+    void fillQty(long qty)
+    {
+        _filledQty    += qty;
+        _remainingQty -= qty;
+    }
 
     void print()
     {
-        std::cout << "Symbol : " << _symbol << " Price : " << _price << " Qty : " << _qty << " Side : " << _side 
-                  <<   " OrderID : " << _orderId << std::endl;
+        std::cout << "Symbol : "     << _symbol 
+                  << " OrderID : "   << _orderId 
+                  << " Price : "     << _price 
+                  << " Qty : "       << _qty 
+                  << " Side : "      << _side 
+                  << std::endl;
     }
 };
 
