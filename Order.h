@@ -55,9 +55,10 @@ public:
 
     void print()
     {
-        std::cout << " ID : "   << _orderId 
-                  << " Price : "     << _price 
-                  << " Qty : "       << _qty 
+        std::cout << " OrderId: "  << _orderId 
+                  << " Side: "     << SideStr[_side]
+                  << " Quantity: " << _qty 
+                  << " Price: "    << _price 
                   << std::endl;
     }
 

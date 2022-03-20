@@ -23,8 +23,8 @@ static const std::string OrderActionStr[] = { "N",
                                               "C"
                                             };
 
-static const std::string SideStr[] = { "B",
-                                       "S"
+static const std::string SideStr[] = { "Buy",
+                                       "Sell"
                                      };
 
 

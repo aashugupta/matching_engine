@@ -42,11 +42,12 @@ private:
     void add( T& orders, Order& order)
     {
         //Check if this should generate a fill  
+        bool orderFullyFilled = false;
         if(order.getSide() == Side::BUY && order.getPrice() >= bestSellPrice() )
         {
             tempListRemoveFilledIds.clear();
             long qtyToFill = order.getQty();
-
+            
             for(auto &sellPricesOrders : _sells)
             {
                 if(sellPricesOrders.first <= order.getPrice())
@@ -84,17 +85,31 @@ private:
 
 
                         if(! currOrd.getReminingQty())
+                        {   
                             tempListRemoveFilledIds.push_back(currOrd.getOrderId());
+                        }
 
                         if(! order.getReminingQty())
-                            return;
+                        {
+                            orderFullyFilled = true;
+                            break;
+                        }
 
                     }
+
+                    if(orderFullyFilled)
+                        break;
                 }
             }
 
             for( auto & oid : tempListRemoveFilledIds)
+            {
+                //std::cout << "removing filled order id : " << oid << "\n";
                 del(_orders[oid]);
+            }
+                        
+            if(! order.getReminingQty()) // return if order if fully filled, else continue to add it to book
+                return;
         }
         else if( order.getSide() == Side::SELL && order.getPrice() <= bestBuyPrice() ) // Incoming Sell order
         {
@@ -123,23 +138,41 @@ private:
                         currOrd.fillQty(qtyFilled);
                         order.fillQty(qtyFilled);
 
-                        std::cout << "Fill on incoming order id : " << order.getOrderId() 
-                            << " WITH oid : "                 << currOrd.getOrderId()
-                            << " Price : "                    << currOrd.getPrice()
-                            << " QtyFilled : "                << qtyFilled << "\n";
+                        std::cout << "Trade:  : " 
+                                  << order.getSymbol() << " "
+                                  << order.getOrderId()  << " "
+                                  << qtyFilled << " " 
+                                  << currOrd.getPrice()  
+                                  << "\n";
+
+                        std::cout << "Trade:  : " 
+                                  << order.getSymbol() << " "
+                                  << currOrd.getOrderId()  << " "
+                                  << qtyFilled << " " 
+                                  << currOrd.getPrice()  
+                                  << "\n";
+
 
                         if(! currOrd.getReminingQty())
                             tempListRemoveFilledIds.push_back(currOrd.getOrderId());
 
                         if(! order.getReminingQty())
-                            return;
+                        {
+                            orderFullyFilled = true;
+                            break;
+                        }
 
                     }
                 }
+                if(orderFullyFilled)
+                    break;
             }
 
             for( auto & oid : tempListRemoveFilledIds)
                 del(_orders[oid]);
+            
+            if(! order.getReminingQty()) // return if order if fully filled, else continue to add it to book
+                return;
 
         }
 
@@ -152,10 +185,13 @@ private:
     template< class T >
     void del( T& orders, Order& order)
     {
-        typename T::iterator it = orders.find( order.getPrice() );
+        double price = _orders[order.getOrderId()].getPrice();
+
+        //typename T::iterator it = orders.find( order.getPrice() );
+        typename T::iterator it = orders.find( price );
         if( it != orders.end () )
         {
-            std::cout << "removing order : " << order.getOrderId() << "\n";
+            //std::cout << "removing order : " << order.getOrderId() << "\n";
             std::list<std::string> & orderIdsList = orders[order.getPrice()];
             orderIdsList.remove(order.getOrderId());
             if(orderIdsList.empty())
