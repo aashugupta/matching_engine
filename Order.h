@@ -3,8 +3,7 @@
 
 #include<string>
 #include<iostream>
-
-enum Side { BUY, SELL };
+#include "Utils.h"
 
 class Order
 {
@@ -41,9 +40,10 @@ public:
     {
         _filledQty    += qty;
         _remainingQty -= qty;
+        _qty           = _remainingQty;
     }
 
-    void print()
+    void printAll()
     {
         std::cout << "Symbol : "     << _symbol 
                   << " OrderID : "   << _orderId 
@@ -52,6 +52,15 @@ public:
                   << " Side : "      << _side 
                   << std::endl;
     }
+
+    void print()
+    {
+        std::cout << " ID : "   << _orderId 
+                  << " Price : "     << _price 
+                  << " Qty : "       << _qty 
+                  << std::endl;
+    }
+
 };
 
 #endif

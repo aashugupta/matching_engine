@@ -55,25 +55,30 @@ private:
                     {
                         Order& currOrd = _orders[orderId];
 
-                        if(currOrd.getReminingQty() <= qtyToFill)
+                        long qtyFilled = 0;
+                        if(currOrd.getReminingQty() <= order.getReminingQty()) // sell Qty < buy Qty
                         {
-                            long qtyFilled = currOrd.getReminingQty();
-                            currOrd.fillQty(currOrd.getReminingQty());
-
-                            order.fillQty(currOrd.getReminingQty());
-
-                            std::cout << "Fill on incoming order id : " << order.getOrderId() 
-                                      << " WITH oid : "                 << currOrd.getOrderId()
-                                      << " Price : "                    << currOrd.getPrice()
-                                      << " QtyFilled : "                << qtyFilled << "\n";
-
-                            if(! currOrd.getReminingQty())
-                                tempListRemoveFilledIds.push_back(currOrd.getOrderId());
-
-                            if(! order.getReminingQty())
-                                return;
-
+                            qtyFilled = currOrd.getReminingQty();
                         }
+                        else  // buy Qty < sell Qty
+                        {
+                            qtyFilled = order.getReminingQty();
+                        }
+
+                        currOrd.fillQty(qtyFilled);
+                        order.fillQty(qtyFilled);
+
+                        std::cout << "Fill on incoming order id : " << order.getOrderId() 
+                            << " WITH oid : "                 << currOrd.getOrderId()
+                            << " Price : "                    << currOrd.getPrice()
+                            << " QtyFilled : "                << qtyFilled << "\n";
+
+                        if(! currOrd.getReminingQty())
+                            tempListRemoveFilledIds.push_back(currOrd.getOrderId());
+
+                        if(! order.getReminingQty())
+                            return;
+
                     }
                 }
             }
@@ -83,6 +88,48 @@ private:
         }
         else if( order.getPrice() <= bestBuyPrice() )
         {
+
+            tempListRemoveFilledIds.clear();
+            long qtyToFill = order.getQty();
+
+            for(auto &buyPricesOrders : _buys)
+            {
+                if(buyPricesOrders.first <= order.getPrice())
+                {
+                    for(auto & orderId : buyPricesOrders.second)
+                    {
+                        Order& currOrd = _orders[orderId];
+
+                        long qtyFilled = 0;
+                        if(currOrd.getReminingQty() <= order.getReminingQty()) // buy Qty < sell Qty
+                        {
+                            qtyFilled = currOrd.getReminingQty();
+                        }
+                        else  // sell Qty < buy Qty
+                        {
+                            qtyFilled = order.getReminingQty();
+                        }
+
+                        currOrd.fillQty(qtyFilled);
+                        order.fillQty(qtyFilled);
+
+                        std::cout << "Fill on incoming order id : " << order.getOrderId() 
+                            << " WITH oid : "                 << currOrd.getOrderId()
+                            << " Price : "                    << currOrd.getPrice()
+                            << " QtyFilled : "                << qtyFilled << "\n";
+
+                        if(! currOrd.getReminingQty())
+                            tempListRemoveFilledIds.push_back(currOrd.getOrderId());
+
+                        if(! order.getReminingQty())
+                            return;
+
+                    }
+                }
+            }
+
+            for( auto & oid : tempListRemoveFilledIds)
+                del(_orders[oid]);
 
         }
 
@@ -117,6 +164,38 @@ private:
     }
 
 public:
+
+    bool validateOrder(OrderAction action, std::string& oid)
+    {
+        switch(action)
+        {
+            case OrderAction::NEW:
+                if( _orders.find(oid) != _orders.end())
+                {
+                    std::cout << "Duplicate order id : " << oid << "\n";
+                    return false;
+                }
+                break;
+            case OrderAction::AMEND:
+            case OrderAction::CANCEL:
+                if( _orders.find(oid) == _orders.end())
+                {
+                    std::cout << "order id not find to cancel/amend OID : " << oid << "\n";
+                    return false;
+                }
+                else if( _orders[oid].getReminingQty() == 0 )
+                {
+                    std::cout << "order remaining qty is 0  OID : " << oid << "\n";
+                    return false;
+                }
+                break;
+            default:
+                    std::cout << "Unrecognised order action " << action << "\n";
+        }
+
+        return true;
+    }
+
     void add(Order &o)
     {
         std::cout << "Adding Order " << o.getOrderId() << std::endl;
@@ -163,22 +242,52 @@ public:
         return ret;
     }
 
-    void printBook()
+    void printBookFull()
     {
-        std::cout << "Printing Book Buys : \n";
+        std::cout << "BUYs : \n";
         for(auto & obj : _buys)
         {
-            std::cout << "Price : " << obj.first << std::endl;
+            //std::cout << "Price : " << obj.first << std::endl;
             for(auto & o : obj.second)
                 _orders[o].print();
         }
 
-        std::cout << "Printing Book Sells : \n";
+        std::cout << "SELLs : \n";
         for(auto & obj : _sells)
         {
-            std::cout << "Price : " << obj.first << std::endl;
+            //std::cout << "Price : " << obj.first << std::endl;
             for(auto & o : obj.second)
                 _orders[o].print();
+        }
+    }
+
+    void printBook()
+    {
+        std::cout << "BUYs : \n";
+        int level = 0;
+        int maxLevel = 5;
+        for(auto & obj : _buys)
+        {
+            for(auto & o : obj.second)
+            {
+                _orders[o].print();
+            }
+            level ++;
+            if(level == maxLevel)
+                break;
+        }
+
+        level = 0;
+        std::cout << "SELLs : \n";
+        for(auto & obj : _sells)
+        {
+            for(auto & o : obj.second)
+            {
+                _orders[o].print();
+            }
+            level ++;
+            if(level == maxLevel)
+                break;
         }
     }
 
