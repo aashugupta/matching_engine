@@ -68,10 +68,20 @@ private:
                         currOrd.fillQty(qtyFilled);
                         order.fillQty(qtyFilled);
 
-                        std::cout << "Fill on incoming order id : " << order.getOrderId() 
-                            << " WITH oid : "                 << currOrd.getOrderId()
-                            << " Price : "                    << currOrd.getPrice()
-                            << " QtyFilled : "                << qtyFilled << "\n";
+                        std::cout << "Trade:  : " 
+                                  << order.getSymbol() << " "
+                                  << order.getOrderId()  << " "
+                                  << qtyFilled << " " 
+                                  << currOrd.getPrice()  
+                                  << "\n";
+
+                        std::cout << "Trade:  : " 
+                                  << order.getSymbol() << " "
+                                  << currOrd.getOrderId()  << " "
+                                  << qtyFilled << " " 
+                                  << currOrd.getPrice()  
+                                  << "\n";
+
 
                         if(! currOrd.getReminingQty())
                             tempListRemoveFilledIds.push_back(currOrd.getOrderId());
@@ -86,7 +96,7 @@ private:
             for( auto & oid : tempListRemoveFilledIds)
                 del(_orders[oid]);
         }
-        else if( order.getPrice() <= bestBuyPrice() )
+        else if( order.getSide() == Side::SELL && order.getPrice() <= bestBuyPrice() ) // Incoming Sell order
         {
 
             tempListRemoveFilledIds.clear();
@@ -94,7 +104,7 @@ private:
 
             for(auto &buyPricesOrders : _buys)
             {
-                if(buyPricesOrders.first <= order.getPrice())
+                if(buyPricesOrders.first >= order.getPrice())
                 {
                     for(auto & orderId : buyPricesOrders.second)
                     {
@@ -198,7 +208,7 @@ public:
 
     void add(Order &o)
     {
-        std::cout << "Adding Order " << o.getOrderId() << std::endl;
+        //std::cout << "Adding Order " << o.getOrderId() << std::endl;
         if( o.getSide() == Side::BUY )
         {
             add( _buys, o);
@@ -213,7 +223,7 @@ public:
 
     void del(Order &o)
     {
-        std::cout << "Deleting Order " << o.getOrderId() << std::endl;
+        //std::cout << "Deleting Order " << o.getOrderId() << std::endl;
         if( o.getSide() == Side::BUY )
         {
             del( _buys, o);

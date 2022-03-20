@@ -54,7 +54,7 @@ public:
 
     void printBookForSymbol(const std::string& sym)
     {
-        std::cout << "\nBook for : " << sym << "\n";
+        std::cout << "\nTicker: " << sym << "\n";
         _books[sym].printBook();
     }
 
@@ -71,7 +71,7 @@ public:
 
         while(std::getline(orderActionsfile, line))
         {
-            std::cout << line << "\n";
+            //std::cout << line << "\n";
 
             std::vector<std::string> orderDetails = getSubStrings(line, ',');   
 
