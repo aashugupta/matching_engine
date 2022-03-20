@@ -196,8 +196,8 @@ private:
             orderIdsList.remove(order.getOrderId());
             if(orderIdsList.empty())
             {
-                std::cout << "Last order at price : "<<  order.getPrice() 
-                          << " removed, deleting this price from map\n";
+                //std::cout << "Last order at price : "<<  order.getPrice() 
+                //          << " removed, deleting this price from map\n";
                 orders.erase(it);
             }
         }
